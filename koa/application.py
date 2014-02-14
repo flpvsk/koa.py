@@ -44,7 +44,7 @@ class Application():
         return
 
 
-  def start(self, port=8000, loop=asyncio.get_event_loop()):
+  def listen(self, port=8000, loop=asyncio.get_event_loop()):
 
     def protocol_factory():
       return HttpProtocol(self)
