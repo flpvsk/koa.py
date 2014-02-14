@@ -85,8 +85,8 @@ class HttpProtocol(Protocol):
       request = HttpRequest(
           reader,
           method=parser.get_method(),
-          path=parser.get_url(),
-          query_string=parser.get_query_string,
+          url=parser.get_url(),
+          query_string=parser.get_query_string(),
           version=parser.get_version(),
           headers=parser.get_headers())
 

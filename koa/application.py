@@ -1,6 +1,6 @@
 import asyncio
 
-from koa.server import HttpProtocol
+from koa.http import HttpProtocol
 
 __all__ = ( 'Application', )
 
