@@ -9,14 +9,14 @@ except ImportError:
     from http_parser.pyparser import HttpParser
 
 
-class HttpContext():
+class HttpContext:
 
   def __init__(self, request, response):
     self.request = request
     self.response = response
 
 
-class HttpRequest():
+class HttpRequest:
 
   def __init__(self, reader, method='GET', url='/',
               version='1.0', query_string='', headers={}):
@@ -37,6 +37,9 @@ class HttpRequest():
   def readexactly(self, n):
     yield from self._reader.readexactly(n)
 
+
+  def __repr__(self):
+    return '<HttpRequest {} {}>'.format(self.method, self.url)
 
 class HttpProtocol(Protocol):
 

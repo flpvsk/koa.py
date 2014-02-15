@@ -3,9 +3,8 @@ from koa import Application
 
 @asyncio.coroutine
 def log_path(ctx, next):
-  print('Got request. {}'.format(ctx.request.url))
+  print('Got request. {}'.format(ctx.request))
   yield from next
-  print('Query String. {}'.format(ctx.request.query_string))
 
 
 @asyncio.coroutine
