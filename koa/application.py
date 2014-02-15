@@ -12,19 +12,17 @@ STOP = stop()
 
 class Application():
 
-  def __init__(self):
+  def __init__(self, loop=asyncio.get_event_loop()):
     self._middleware_list = []
+    self._loop = loop
 
 
   def use(self, middleware):
     self._middleware_list.append(middleware)
 
 
+  @asyncio.coroutine
   def on_request(self, ctx):
-    self.run(ctx)
-
-
-  def run(self, ctx=None):
     mw_list = self._middleware_list
 
     if not mw_list:
@@ -37,17 +35,17 @@ class Application():
       prev = cur
 
     first = prev
-    while True:
-      try:
-        next(first)
-      except StopIteration:
-        return
+
+    yield from first
+    yield from ctx.response.end()
 
 
   def listen(self, port=8000, loop=asyncio.get_event_loop()):
 
     def protocol_factory():
       return HttpProtocol(self)
+
+    self._loop = loop
 
     server = loop.create_server(
           protocol_factory, host='127.0.0.1', port=port)

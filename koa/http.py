@@ -14,6 +14,9 @@ except ImportError:
     from http_parser.pyparser import HttpParser
 
 
+__all__ = ( 'HttpContext', 'HttpRequest', 'HttpResponse' )
+
+
 class HttpContext:
 
   def __init__(self, request, response):
@@ -53,6 +56,7 @@ class HttpResponse:
     self._writer = writer
     self._body = ''
     self.version = '1.0'
+    self.status = 404
     self.headers = dict()
 
 
@@ -68,20 +72,23 @@ class HttpResponse:
 
   @asyncio.coroutine
   def _write_status_line(self):
-    self._writer.write('HTTP/{!s} {:d} {!s}\n'.format(
-      self.version, self.status, status_to_str[self.status]))
+    status_line = 'HTTP/{!s} {:d} {!s}\n'.format(
+      self.version, self.status, status_to_str[self.status])
+
+    self._writer.write(status_line.encode('latin-1'))
 
   @asyncio.coroutine
   def _write_headers(self):
     for (h, v) in self.headers.items():
       h = '-'.join([
         x.capitalize() for x in h.split('-') ])
-      self._writer.write('{!s}: {!s}\n'.format(h, v))
+      self._writer.write('{!s}: {!s}\n'.format(h, v).encode('latin-1'))
 
   @asyncio.coroutine
   def _write_body(self):
     if not self._body:
-      self._writer.write('\n')
+      print('Writing body')
+      self._writer.write('\n\n'.encode('latin-1'))
 
   @asyncio.coroutine
   def end(self):
@@ -144,7 +151,7 @@ class HttpProtocol(Protocol):
 
       self._request = request
 
-      ctx = HttpContext(request, None)
+      ctx = HttpContext(request, HttpResponse(self._transport))
       self._app.on_request(ctx)
 
     if parser.is_message_complete():
@@ -157,3 +164,5 @@ class HttpProtocol(Protocol):
   def eof_received(self):
     print('EOF received')
     pass
+
+

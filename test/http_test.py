@@ -24,7 +24,7 @@ class TestHttpResponse:
 
     loop.run_until_complete(res.end())
 
-    writer.write.assert_any_call('HTTP/1.0 200 OK\n')
+    writer.write.assert_any_call('HTTP/1.0 200 OK\n'.encode('latin-1'))
 
 
   def end_method_writes_content_length_test(self):
@@ -37,11 +37,11 @@ class TestHttpResponse:
 
     loop.run_until_complete(res.end())
 
-    writer.write.assert_called_with(
-        'Content-Length: {:d}\n'.format(len(response_str)))
+    status_str = 'Content-Length: {:d}\n'.format(len(response_str))
+    writer.write.assert_called_with(status_str.encode('latin-1'))
 
   def end_method_no_body_test(self):
-    buf = ''
+    buf = b''
 
     def write_to_buf(data):
       nonlocal buf
@@ -57,7 +57,7 @@ class TestHttpResponse:
 
     print('BUF', buf[-2:])
 
-    assert buf[-2:] == '\n\n'
+    assert buf[-2:] == b'\n\n'
 
 
 
