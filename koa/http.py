@@ -1,6 +1,11 @@
 import asyncio
+
 from asyncio.protocols import Protocol
 from asyncio.streams import StreamReader
+
+from collections import OrderedDict
+
+from http.client import responses as status_to_str
 
 # try to import C parser then fallback in pure python parser.
 try:
@@ -40,6 +45,50 @@ class HttpRequest:
 
   def __repr__(self):
     return '<HttpRequest {} {}>'.format(self.method, self.url)
+
+
+class HttpResponse:
+
+  def __init__(self, writer):
+    self._writer = writer
+    self._body = ''
+    self.version = '1.0'
+    self.headers = dict()
+
+
+  def write(self, data=None):
+    if not data or len(data) == 0: return
+
+    if 'content-length' not in self.headers:
+      self.headers['content-length'] = 0
+
+    self.headers['content-length'] += len(data)
+    self._body += data
+
+
+  @asyncio.coroutine
+  def _write_status_line(self):
+    self._writer.write('HTTP/{!s} {:d} {!s}\n'.format(
+      self.version, self.status, status_to_str[self.status]))
+
+  @asyncio.coroutine
+  def _write_headers(self):
+    for (h, v) in self.headers.items():
+      h = '-'.join([
+        x.capitalize() for x in h.split('-') ])
+      self._writer.write('{!s}: {!s}\n'.format(h, v))
+
+  @asyncio.coroutine
+  def _write_body(self):
+    if not self._body:
+      self._writer.write('\n')
+
+  @asyncio.coroutine
+  def end(self):
+    yield from self._write_status_line()
+    yield from self._write_headers()
+    yield from self._write_body()
+
 
 class HttpProtocol(Protocol):
 

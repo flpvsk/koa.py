@@ -91,4 +91,3 @@ def execution_stops_if_error_test():
 
   ok_(not md1_continued)
 
-
