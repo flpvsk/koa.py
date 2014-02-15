@@ -5,7 +5,8 @@ from koa import Application
 def log_path(ctx, next):
   print('Got request. {}'.format(ctx.request))
   yield from next
-  ctx.response.status = 200
+  ctx.response.status = 204
+  ctx.response.version = '1.1'
 
 
 @asyncio.coroutine

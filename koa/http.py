@@ -152,7 +152,8 @@ class HttpProtocol(Protocol):
       self._request = request
 
       ctx = HttpContext(request, HttpResponse(self._transport))
-      self._app.on_request(ctx)
+      f = asyncio.async(self._app.on_request(ctx))
+
 
     if parser.is_message_complete():
       print("Message complete")
