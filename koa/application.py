@@ -40,12 +40,10 @@ class Application():
     yield from ctx.response.end()
 
 
-  def listen(self, port=8000, loop=asyncio.get_event_loop()):
+  def listen(self, port=8000):
 
     def protocol_factory():
       return HttpProtocol(self)
-
-    self._loop = loop
 
     server = loop.create_server(
           protocol_factory, host='127.0.0.1', port=port)
