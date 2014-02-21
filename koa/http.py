@@ -24,6 +24,12 @@ class HttpContext:
     self.response = response
 
 
+class CaseInsensitiveDict(dict):
+
+  def __setitem__(self, key, val):
+    super().__setitem__(key.lower(), val)
+
+
 class HttpRequest:
 
   def __init__(self, reader, method='GET', url='/',
@@ -57,7 +63,7 @@ class HttpResponse:
     self._body = ''
     self.version = '1.0'
     self.status = 404
-    self.headers = dict()
+    self.headers = CaseInsensitiveDict()
 
 
   def write(self, data=None):
