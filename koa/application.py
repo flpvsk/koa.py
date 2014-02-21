@@ -45,9 +45,9 @@ class Application():
     def protocol_factory():
       return HttpProtocol(self)
 
-    server = loop.create_server(
+    server = self._loop.create_server(
           protocol_factory, host='127.0.0.1', port=port)
 
-    loop.run_until_complete(server)
+    self._loop.run_until_complete(server)
     print('Server started on port {}'.format(port))
-    loop.run_forever()
+    self._loop.run_forever()

@@ -92,9 +92,12 @@ class HttpResponse:
 
   @asyncio.coroutine
   def _write_body(self):
-    if not self._body:
-      print('Writing body')
-      self._writer.write('\n\n'.encode('latin-1'))
+    print('Writing body')
+
+    if self._body:
+      self._writer.write(self._body.encode('latin-1'))
+
+    self._writer.write('\n\n'.encode('latin-1'))
 
   @asyncio.coroutine
   def end(self):

@@ -43,8 +43,8 @@ class TestHttpResponse:
 
   def end_method_writes_content_length_test(self):
     res = HttpResponse(self._writer)
-    res.status = 200
 
+    res.status = 200
     response_str = 'Boo Ya!'
     response_len_b = bytes(str(len(response_str)), 'latin-1')
     res.write(response_str)
@@ -56,11 +56,22 @@ class TestHttpResponse:
 
   def end_method_no_body_test(self):
     res = HttpResponse(self._writer)
-    res.status = 200
 
     loop.run_until_complete(res.end())
 
     assert self._result[-2:] == b'\n\n'
+
+
+  def write_body_test(self):
+    res = HttpResponse(self._writer)
+
+    res.status = 200
+    res.write('Response body!')
+
+    loop.run_until_complete(res.end())
+
+    print('RESULT:', self._result)
+    assert b'Response body!\n\n' in self._result
 
 
   def headers_are_case_insensitive_test(self):
@@ -85,7 +96,3 @@ class TestHttpResponse:
     assert b'X-My-Header: new-value' in self._result
     assert b'old-value' not in self._result
 
-
-
-class TestHttpProtocol:
-  pass
