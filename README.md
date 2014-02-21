@@ -12,23 +12,22 @@ Example:
     from koa import Application
 
     @asyncio.coroutine
-    def md1(ctx, next):
-      print('Before md2')
-      print('Url: {}'.format(ctx.request.url))
-      yield from next
-      print('After md2')
+    def set_status(ctx, nxt):
+      ctx.response.status = 200
+      yield from nxt
+      print('After write_body')
 
 
     @asyncio.coroutine
-    def md2(ctx, next):
-      print('md2')
-      yield from next
+    def write_body(ctx, nxt):
+      ctx.response.write('Hi, you\'ve reached {}'.format(ctx.request.url))
+      yield from nxt
 
 
     if __name__ == '__main__':
       app = Application()
-      app.use(md1)
-      app.use(md2)
+      app.use(set_status)
+      app.use(write_body)
 
       app.listen(8000)
 
