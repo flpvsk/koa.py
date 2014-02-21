@@ -1,6 +1,11 @@
 import asyncio
+
 from asyncio.protocols import Protocol
 from asyncio.streams import StreamReader
+
+from collections import OrderedDict
+
+from http.client import responses as status_to_str
 
 # try to import C parser then fallback in pure python parser.
 try:
@@ -9,14 +14,23 @@ except ImportError:
     from http_parser.pyparser import HttpParser
 
 
-class HttpContext():
+__all__ = ( 'HttpContext', 'HttpRequest', 'HttpResponse' )
+
+
+class HttpContext:
 
   def __init__(self, request, response):
     self.request = request
     self.response = response
 
 
-class HttpRequest():
+class CaseInsensitiveDict(dict):
+
+  def __setitem__(self, key, val):
+    super().__setitem__(key.lower(), val)
+
+
+class HttpRequest:
 
   def __init__(self, reader, method='GET', url='/',
               version='1.0', query_string='', headers={}):
@@ -36,6 +50,61 @@ class HttpRequest():
   @asyncio.coroutine
   def readexactly(self, n):
     yield from self._reader.readexactly(n)
+
+
+  def __repr__(self):
+    return '<HttpRequest {} {}>'.format(self.method, self.url)
+
+
+class HttpResponse:
+
+  def __init__(self, writer):
+    self._writer = writer
+    self._body = ''
+    self.version = '1.0'
+    self.status = 404
+    self.headers = CaseInsensitiveDict()
+
+
+  def write(self, data=None):
+    if not data or len(data) == 0: return
+
+    if 'content-length' not in self.headers:
+      self.headers['content-length'] = 0
+
+    self.headers['content-length'] += len(data)
+    self._body += data
+
+
+  @asyncio.coroutine
+  def _write_status_line(self):
+    status_line = 'HTTP/{!s} {:d} {!s}\n'.format(
+      self.version, self.status, status_to_str[self.status])
+
+    self._writer.write(status_line.encode('latin-1'))
+
+  @asyncio.coroutine
+  def _write_headers(self):
+    for (h, v) in self.headers.items():
+      h = '-'.join([
+        x.capitalize() for x in h.split('-') ])
+      self._writer.write('{!s}: {!s}\n'.format(h, v).encode('latin-1'))
+
+  @asyncio.coroutine
+  def _write_body(self):
+    print('Writing body')
+
+    if self._body:
+      self._writer.write(b'\n\n')
+      self._writer.write(self._body.encode('latin-1'))
+
+    self._writer.write(b'\n\n')
+
+  @asyncio.coroutine
+  def end(self):
+    yield from self._write_status_line()
+    yield from self._write_headers()
+    yield from self._write_body()
 
 
 class HttpProtocol(Protocol):
@@ -92,8 +161,9 @@ class HttpProtocol(Protocol):
 
       self._request = request
 
-      ctx = HttpContext(request, None)
-      self._app.on_request(ctx)
+      ctx = HttpContext(request, HttpResponse(self._transport))
+      f = asyncio.async(self._app.on_request(ctx))
+
 
     if parser.is_message_complete():
       print("Message complete")
@@ -105,3 +175,5 @@ class HttpProtocol(Protocol):
   def eof_received(self):
     print('EOF received')
     pass
+
+
