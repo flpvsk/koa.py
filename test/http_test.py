@@ -71,7 +71,7 @@ class TestHttpResponse:
     loop.run_until_complete(res.end())
 
     print('RESULT:', self._result)
-    assert b'Response body!\n\n' in self._result
+    assert b'\n\nResponse body!\n\n' in self._result
 
 
   def headers_are_case_insensitive_test(self):
