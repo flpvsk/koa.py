@@ -35,9 +35,7 @@ def read_one_source_co_test():
         nonlocal result
         result = yield from read_data_from('file')
 
-    task = asyncio.Task(read_and_process())
-    loop.call_soon(task)
-    loop.run_until_complete(task)
+    loop.run_until_complete(read_and_process())
 
     assert result == 'Data from file', "%r is not expected" % result
 
@@ -74,9 +72,7 @@ def read_two_sources_sequentially_co_test():
         content2 = yield from read_data_from('file2')
         result = "Content1: %s\nContent2: %s" % (content1, content2)
 
-    task = asyncio.Task(read_and_process())
-    loop.call_soon(task)
-    loop.run_until_complete(task)
+    loop.run_until_complete(read_and_process())
 
     expected = "Content1: Data from file1\nContent2: Data from file2"
     assert result == expected, "%r not expected" % result
@@ -117,9 +113,7 @@ def read_two_source_parallel_co_test():
         content1, content2 = yield from content
         result = "Content1: %s\nContent2: %s" % (content1, content2)
 
-    task = asyncio.Task(read_and_process())
-    loop.call_soon(task)
-    loop.run_until_complete(task)
+    loop.run_until_complete(read_and_process())
 
     expected = "Content1: Data from file1\nContent2: Data from file2"
     assert result == expected, "%r not expected" % result
