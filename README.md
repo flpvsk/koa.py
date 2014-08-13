@@ -1,5 +1,8 @@
 ### Koa.py
 
+[![Build
+Status](https://drone.io/github.com/filipovskii/koa.py/status.png)](https://drone.io/github.com/filipovskii/koa.py/latest)
+
 Web framework, inspired by [koa.js][koajs].
 
 Started for exploring capabilities of python [asyncio][asyncio] framework.
